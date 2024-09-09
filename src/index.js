@@ -1,10 +1,16 @@
 const express = require('express');
 const series = require('../data/series.json')
+const metrics = require('./metrics');
+const responseTime = require('response-time')
 const app = express();
-
 const PORT = 3001
 
+app.disable('etag');
 app.use(express.json())
+app.use(responseTime(metrics.responseTimeMiddleware))
+app.use(metrics.delayMiddleware())
+app.use(metrics.counterMiddleware())
+
 
 app.get('/series',(req, res)=>{
     res.status(200).json(series)
@@ -61,4 +67,5 @@ app.put('/series/:id', (req, res)=>{
 
 app.listen(PORT,()=>{
     console.log(`Aplicacion lista escuchando en ${PORT}`)
+    metrics.startMetricsServer()
 })
